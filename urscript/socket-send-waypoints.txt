@@ -1,0 +1,28 @@
+ Program
+   Robot Program
+     set_tcp(p[0,0,0.067,0,0,0])
+     set_standard_digital_out(0,False)
+     movej([0.0102974,-1.52506,1.68598,-1.73084,-1.5547,1.58406],a=0.1,v=0.25)
+     socket = socket_open("192.168.1.101", 30002, "socket_0")
+     If socket
+       socket_send_int(0, "socket_0")
+       points = socket_read_ascii_float(1,"socket_0")
+       counter = 1
+       Loop counter ≤ points[1]
+         socket_send_int(counter, "socket_0")
+         traj = socket_read_ascii_float(7, "socket_0")
+         servoj(get_inverse_kin(p[traj[1],traj[2],traj[3],traj[4],traj[5],traj[6]]),t=traj[7])
+         counter = counter + 1
+       midpoint = get_actual_tcp_pose()
+       socket_send_int(999,"socket_0")
+       target = socket_read_ascii_float(6,"socket_0")
+       movel(p[target[1],target[2],target[3],target[4],target[5],target[6]],a=0.1,v=0.25)
+       set_standard_digital_out(0,True)
+       Wait: 0.2
+       movel(midpoint,a=0.1,v=0.25)
+       movej([0.0102974,-1.52506,1.68598,-1.73084,-1.5547,1.58406],a=0.1,v=0.25)
+       socket_send_int(777, "socket_0")
+       Wait: 2.0
+       socket_close("socket_0")
+     Else
+       Wait: 1.0
